@@ -118,27 +118,6 @@
         .products-table {
             width: 100%;
             border-collapse: collapse;
-            overflow-x: auto;
-            display: block;
-            white-space: nowrap;
-        }
-
-        .products-table thead,
-        .products-table tbody {
-            display: table;
-            width: 100%;
-            table-layout: fixed;
-        }
-
-        .products-table tbody {
-            display: block;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .products-table tbody tr {
-            display: table;
-            width: 100%;
             table-layout: fixed;
         }
 
@@ -161,17 +140,17 @@
             z-index: 10;
         }
 
-        .products-table th:first-child { width: 8%; }
-        .products-table th:nth-child(2) { width: 23%; }
-        .products-table th:nth-child(3) { width: 23%; }
-        .products-table th:nth-child(4) { width: 23%; }
-        .products-table th:nth-child(5) { width: 23%; }
+        .products-table th:first-child { width: 12%; }
+        .products-table th:nth-child(2) { width: 22%; }
+        .products-table th:nth-child(3) { width: 22%; }
+        .products-table th:nth-child(4) { width: 22%; }
+        .products-table th:nth-child(5) { width: 22%; }
 
-        .products-table td:first-child { width: 8%; }
-        .products-table td:nth-child(2) { width: 23%; }
-        .products-table td:nth-child(3) { width: 23%; }
-        .products-table td:nth-child(4) { width: 23%; }
-        .products-table td:nth-child(5) { width: 23%; }
+        .products-table td:first-child { width: 12%; }
+        .products-table td:nth-child(2) { width: 22%; }
+        .products-table td:nth-child(3) { width: 22%; }
+        .products-table td:nth-child(4) { width: 22%; }
+        .products-table td:nth-child(5) { width: 22%; }
 
         .products-table tbody tr:nth-child(even) {
             background: #f8f9ff;
@@ -481,7 +460,7 @@
 
                 <div class="products-section">
                     <div class="products-title">פרטי המוצרים להזמנה</div>
-                    <div style="overflow-x: auto;">
+                    <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
                         <table class="products-table">
                             <thead>
                                 <tr>
@@ -501,6 +480,7 @@
 
                 <div class="actions">
                     <button type="button" class="btn btn-primary" onclick="generateOutput()">הצג פלט נתונים</button>
+                    <button type="button" class="btn btn-success" onclick="exportCSV()">ייצוא לאקסל</button>
                     <button type="button" class="btn btn-success" onclick="shareData()">שתף נתונים</button>
                     <button type="button" class="btn btn-secondary" onclick="emailData()">שלח במייל</button>
                     <button type="button" class="btn btn-secondary" onclick="clearForm()">נקה טופס</button>
@@ -711,6 +691,71 @@ ____________________________________`;
             outputSection.style.display = 'block';
             outputSection.classList.add('fade-in');
             outputSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ייצוא לקובץ CSV עבור אקסל
+        function exportCSV() {
+            if (!validateForm()) {
+                return;
+            }
+
+            const clientName = document.getElementById('clientName').value;
+            const pickupDate = document.getElementById('pickupDate').value;
+            const pickupTime = document.getElementById('pickupTime').value;
+            const ordererName = document.getElementById('ordererName').value;
+            const products = collectProductsData();
+
+            const formattedPickupDate = new Date(pickupDate).toLocaleDateString('he-IL');
+
+            // יצירת תוכן CSV
+            let csvContent = '\uFEFF'; // BOM for Hebrew support
+            
+            // כותרות פרטי ההזמנה
+            csvContent += 'פרטי ההזמנה\n';
+            csvContent += `שם הלקוח,${clientName}\n`;
+            csvContent += `תאריך איסוף מתוכנן,${formattedPickupDate}\n`;
+            csvContent += `שעה מבוקשת,${pickupTime}\n`;
+            csvContent += `שם המזמין,${ordererName}\n`;
+            csvContent += `זמן יצירת ההזמנה,${new Date().toLocaleString('he-IL')}\n`;
+            csvContent += '\n';
+            
+            // כותרות טבלת מוצרים
+            csvContent += 'מספר,מקט,שם המוצר,כמות,מצב המוצר\n';
+            
+            // נתוני המוצרים
+            if (products.length > 0) {
+                products.forEach(product => {
+                    csvContent += `${product.number},`;
+                    csvContent += `"${product.sku || 'לא צוין'}",`;
+                    csvContent += `"${product.productName || 'לא צוין'}",`;
+                    csvContent += `"${product.quantity || 'לא צוין'}",`;
+                    csvContent += `"${product.state || 'לא צוין'}"\n`;
+                });
+            } else {
+                csvContent += 'לא הוזנו מוצרים\n';
+            }
+            
+            csvContent += '\n';
+            csvContent += 'סיכום ההזמנה\n';
+            csvContent += `סהכ מוצרים,${products.length}\n`;
+            csvContent += `מוצרים עם כמות,${products.filter(p => p.quantity).length}\n`;
+            csvContent += `מוצרים עם מצב מוגדר,${products.filter(p => p.state).length}\n`;
+
+            // יצירת הקובץ להורדה
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            const fileName = `הזמנת_דוגמאות_${clientName}_${pickupDate}.csv`;
+            
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showSuccessMessage('קובץ CSV יוצא בהצלחה לאקסל!');
         }
 
         // שיתוף נתונים - פתיחת Web Share API
