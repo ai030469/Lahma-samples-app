@@ -649,13 +649,13 @@ ____________________________________
 `;
 
             if (products.length > 0) {
-                output += `\nמס׳ מק״ט             שם המוצר          כמות מצב המוצר\n`;
-                output += `___________________________________________________\n`;
+                output += `\nמס׳ מק״ט                 שם המוצר             כמות מצב המוצר\n`;
+                output += `───────────────────────────────────────────────────────────\n`;
                 
                 products.forEach(product => {
                     const num = product.number.toString().padEnd(3, ' ');
-                    const sku = (product.sku || 'לא צוין').padEnd(15, ' ');
-                    const name = (product.productName || 'לא צוין').padEnd(15, ' ');
+                    const sku = (product.sku || 'לא צוין').padEnd(19, ' ');
+                    const name = (product.productName || 'לא צוין').padEnd(17, ' ');
                     const qty = (product.quantity || 'לא צוין').padEnd(5, ' ');
                     const state = product.state || 'לא צוין';
                     
