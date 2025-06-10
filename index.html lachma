@@ -144,10 +144,12 @@
 
         .products-table th,
         .products-table td {
-            padding: 10px;
+            padding: 8px 4px;
             text-align: center;
             border: 1px solid #ddd;
             vertical-align: middle;
+            word-wrap: break-word;
+            overflow: hidden;
         }
 
         .products-table th {
@@ -159,17 +161,17 @@
             z-index: 10;
         }
 
-        .products-table th:first-child { width: 10%; }
-        .products-table th:nth-child(2) { width: 22.5%; }
-        .products-table th:nth-child(3) { width: 22.5%; }
-        .products-table th:nth-child(4) { width: 22.5%; }
-        .products-table th:nth-child(5) { width: 22.5%; }
+        .products-table th:first-child { width: 8%; }
+        .products-table th:nth-child(2) { width: 23%; }
+        .products-table th:nth-child(3) { width: 23%; }
+        .products-table th:nth-child(4) { width: 23%; }
+        .products-table th:nth-child(5) { width: 23%; }
 
-        .products-table td:first-child { width: 10%; }
-        .products-table td:nth-child(2) { width: 22.5%; }
-        .products-table td:nth-child(3) { width: 22.5%; }
-        .products-table td:nth-child(4) { width: 22.5%; }
-        .products-table td:nth-child(5) { width: 22.5%; }
+        .products-table td:first-child { width: 8%; }
+        .products-table td:nth-child(2) { width: 23%; }
+        .products-table td:nth-child(3) { width: 23%; }
+        .products-table td:nth-child(4) { width: 23%; }
+        .products-table td:nth-child(5) { width: 23%; }
 
         .products-table tbody tr:nth-child(even) {
             background: #f8f9ff;
