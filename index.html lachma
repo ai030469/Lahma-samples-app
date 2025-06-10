@@ -450,19 +450,19 @@
                     <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
                         <table class="products-table">
                             <colgroup>
-                                <col style="width: 80px;">
-                                <col style="width: 180px;">
-                                <col style="width: 180px;">
-                                <col style="width: 180px;">
-                                <col style="width: 180px;">
+                                <col style="width: 60px;">
+                                <col style="width: 185px;">
+                                <col style="width: 185px;">
+                                <col style="width: 185px;">
+                                <col style="width: 185px;">
                             </colgroup>
                             <thead>
                                 <tr>
                                     <th>מס'</th>
                                     <th>מק"ט</th>
-                                    <th>שם המוצר</th>
                                     <th>כמות</th>
                                     <th>מצב המוצר</th>
+                                    <th>הערות</th>
                                 </tr>
                             </thead>
                             <tbody id="productsTableBody">
@@ -515,9 +515,6 @@
                         <input type="text" class="product-input" id="sku_${i}" placeholder="מק"ט מוצר">
                     </td>
                     <td>
-                        <input type="text" class="product-input" id="productName_${i}" placeholder="שם המוצר">
-                    </td>
-                    <td>
                         <input type="number" class="product-input" id="quantity_${i}" placeholder="כמות" min="0" step="0.1">
                     </td>
                     <td>
@@ -526,6 +523,9 @@
                                 `<option value="${state.value}">${state.text}</option>`
                             ).join('')}
                         </select>
+                    </td>
+                    <td>
+                        <input type="text" class="product-input" id="notes_${i}" placeholder="הערות">
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -537,17 +537,17 @@
             const products = [];
             for (let i = 1; i <= 16; i++) {
                 const sku = document.getElementById(`sku_${i}`).value.trim();
-                const productName = document.getElementById(`productName_${i}`).value.trim();
                 const quantity = document.getElementById(`quantity_${i}`).value.trim();
                 const state = document.getElementById(`state_${i}`).value;
+                const notes = document.getElementById(`notes_${i}`).value.trim();
                 
-                if (sku || productName || quantity || state) {
+                if (sku || quantity || state || notes) {
                     products.push({
                         number: i,
                         sku: sku,
-                        productName: productName,
                         quantity: quantity,
-                        state: state
+                        state: state,
+                        notes: notes
                     });
                 }
             }
@@ -643,17 +643,17 @@ ____________________________________
 `;
 
             if (products.length > 0) {
-                output += `\nמס׳ מק״ט                 שם המוצר             כמות מצב המוצר\n`;
-                output += `───────────────────────────────────────────────────────────\n`;
+                output += `\nמס׳ מק״ט                 כמות                מצב המוצר            הערות\n`;
+                output += `─────────────────────────────────────────────────────────────────────────\n`;
                 
                 products.forEach(product => {
                     const num = product.number.toString().padEnd(3, ' ');
-                    const sku = (product.sku || 'לא צוין').padEnd(19, ' ');
-                    const name = (product.productName || 'לא צוין').padEnd(17, ' ');
-                    const qty = (product.quantity || 'לא צוין').padEnd(5, ' ');
-                    const state = product.state || 'לא צוין';
+                    const sku = (product.sku || 'לא צוין').padEnd(20, ' ');
+                    const qty = (product.quantity || 'לא צוין').padEnd(20, ' ');
+                    const state = (product.state || 'לא צוין').padEnd(20, ' ');
+                    const notes = product.notes || 'לא צוין';
                     
-                    output += `${num} ${sku} ${name} ${qty} ${state}\n`;
+                    output += `${num} ${sku} ${qty} ${state} ${notes}\n`;
                 });
             } else {
                 output += `\nלא הוזנו מוצרים.\n`;
@@ -664,6 +664,7 @@ ____________________________________
 סה״כ מוצרים: ${products.length}
 מוצרים עם כמות: ${products.filter(p => p.quantity).length}
 מוצרים עם מצב מוגדר: ${products.filter(p => p.state).length}
+מוצרים עם הערות: ${products.filter(p => p.notes).length}
 
 תודה על ההזמנה!
 ____________________________________`;
@@ -714,16 +715,16 @@ ____________________________________`;
             csvContent += '\n';
             
             // כותרות טבלת מוצרים
-            csvContent += 'מספר,מקט,שם המוצר,כמות,מצב המוצר\n';
+            csvContent += 'מספר,מקט,כמות,מצב המוצר,הערות\n';
             
             // נתוני המוצרים
             if (products.length > 0) {
                 products.forEach(product => {
                     csvContent += `${product.number},`;
                     csvContent += `"${product.sku || 'לא צוין'}",`;
-                    csvContent += `"${product.productName || 'לא צוין'}",`;
                     csvContent += `"${product.quantity || 'לא צוין'}",`;
-                    csvContent += `"${product.state || 'לא צוין'}"\n`;
+                    csvContent += `"${product.state || 'לא צוין'}",`;
+                    csvContent += `"${product.notes || 'לא צוין'}"\n`;
                 });
             } else {
                 csvContent += 'לא הוזנו מוצרים\n';
@@ -734,6 +735,7 @@ ____________________________________`;
             csvContent += `סהכ מוצרים,${products.length}\n`;
             csvContent += `מוצרים עם כמות,${products.filter(p => p.quantity).length}\n`;
             csvContent += `מוצרים עם מצב מוגדר,${products.filter(p => p.state).length}\n`;
+            csvContent += `מוצרים עם הערות,${products.filter(p => p.notes).length}\n`;
 
             // יצירת הקובץ להורדה
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
