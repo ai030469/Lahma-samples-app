@@ -160,16 +160,16 @@
         }
 
         .products-table th:first-child { width: 8%; }
-        .products-table th:nth-child(2) { width: 15%; }
-        .products-table th:nth-child(3) { width: 35%; }
-        .products-table th:nth-child(4) { width: 12%; }
-        .products-table th:nth-child(5) { width: 30%; }
+        .products-table th:nth-child(2) { width: 20%; }
+        .products-table th:nth-child(3) { width: 25%; }
+        .products-table th:nth-child(4) { width: 15%; }
+        .products-table th:nth-child(5) { width: 32%; }
 
         .products-table td:first-child { width: 8%; }
-        .products-table td:nth-child(2) { width: 15%; }
-        .products-table td:nth-child(3) { width: 35%; }
-        .products-table td:nth-child(4) { width: 12%; }
-        .products-table td:nth-child(5) { width: 30%; }
+        .products-table td:nth-child(2) { width: 20%; }
+        .products-table td:nth-child(3) { width: 25%; }
+        .products-table td:nth-child(4) { width: 15%; }
+        .products-table td:nth-child(5) { width: 32%; }
 
         .products-table tbody tr:nth-child(even) {
             background: #f8f9ff;
@@ -281,11 +281,15 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 15px;
-            max-height: 500px;
+            white-space: pre-wrap;
+            font-family: 'Arial', sans-serif;
+            font-size: 0.9rem;
+            max-height: 400px;
             overflow-y: auto;
             margin: 15px 0;
             direction: rtl;
             text-align: right;
+            line-height: 1.6;
         }
 
         .validation-error {
@@ -430,7 +434,7 @@
 
                 <div class="actions">
                     <button type="button" class="btn btn-primary" onclick="generateOutput()">הצג פלט נתונים</button>
-                    <button type="button" class="btn btn-success" onclick="exportData()">ייצוא לקובץ</button>
+                    <button type="button" class="btn btn-success" onclick="shareData()">שתף נתונים</button>
                     <button type="button" class="btn btn-secondary" onclick="emailData()">שלח במייל</button>
                     <button type="button" class="btn btn-secondary" onclick="clearForm()">נקה טופס</button>
                 </div>
@@ -473,7 +477,7 @@
                         <input type="text" class="product-input" id="productName_${i}" placeholder="שם המוצר">
                     </td>
                     <td>
-                        <input type="number" class="product-input" id="quantity_${i}" placeholder="כמות" min="0" step="1">
+                        <input type="number" class="product-input" id="quantity_${i}" placeholder="כמות" min="0" step="0.1">
                     </td>
                     <td>
                         <select class="product-select" id="state_${i}">
@@ -582,71 +586,48 @@
 
             const formattedPickupDate = new Date(pickupDate).toLocaleDateString('he-IL');
 
-            // יצירת טבלת HTML
-            let tableHTML = `
-<div style="font-family: Arial; direction: rtl; text-align: right; line-height: 1.6;">
-    <div style="text-align: center; background: #2E7D7D; color: white; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
-        <h2 style="margin: 0; font-size: 24px;">🏢 לחמא - הזמנת דוגמאות</h2>
-    </div>
-    
-    <div style="background: #f8f9ff; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #2E7D7D;">
-        <h3 style="color: #2E7D7D; margin-top: 0;">פרטי ההזמנה:</h3>
-        <p><strong>שם הלקוח:</strong> ${clientName}</p>
-        <p><strong>תאריך איסוף מתוכנן:</strong> ${formattedPickupDate}</p>
-        <p><strong>שעה מבוקשת:</strong> ${pickupTime}</p>
-        <p><strong>שם המזמין:</strong> ${ordererName}</p>
-        <p><strong>זמן יצירת ההזמנה:</strong> ${new Date().toLocaleString('he-IL')}</p>
-    </div>
-    
-    <h3 style="color: #2E7D7D;">פרטי המוצרים:</h3>
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2px solid #2E7D7D;">
-        <thead>
-            <tr style="background: #2E7D7D; color: white;">
-                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">מס׳</th>
-                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">מק״ט</th>
-                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">שם המוצר</th>
-                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">כמות</th>
-                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">מצב המוצר</th>
-            </tr>
-        </thead>
-        <tbody>`;
+            let output = `
+לחמא - הזמנת דוגמאות
+____________________________________
+
+פרטי ההזמנה:
+שם הלקוח: ${clientName}
+תאריך איסוף מתוכנן: ${formattedPickupDate}
+שעה מבוקשת: ${pickupTime}
+שם המזמין: ${ordererName}
+זמן יצירת ההזמנה: ${new Date().toLocaleString('he-IL')}
+
+פרטי המוצרים:
+____________________________________
+`;
 
             if (products.length > 0) {
-                products.forEach((product, index) => {
-                    const rowColor = index % 2 === 0 ? '#ffffff' : '#f8f9ff';
-                    tableHTML += `
-            <tr style="background: ${rowColor};">
-                <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">${product.number}</td>
-                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${product.sku || 'לא צוין'}</td>
-                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${product.productName || 'לא צוין'}</td>
-                <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">${product.quantity || 'לא צוין'}</td>
-                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${product.state || 'לא צוין'}</td>
-            </tr>`;
+                output += `\nמס׳    מק״ט              שם המוצר                     כמות    מצב המוצר\n`;
+                output += `____________________________________________________________________\n`;
+                
+                products.forEach(product => {
+                    const num = product.number.toString().padEnd(6, ' ');
+                    const sku = (product.sku || 'לא צוין').padEnd(18, ' ');
+                    const name = (product.productName || 'לא צוין').padEnd(28, ' ');
+                    const qty = (product.quantity || 'לא צוין').padEnd(8, ' ');
+                    const state = product.state || 'לא צוין';
+                    
+                    output += `${num}${sku}${name}${qty}${state}\n`;
                 });
             } else {
-                tableHTML += `
-            <tr>
-                <td colspan="5" style="border: 1px solid #ddd; padding: 20px; text-align: center; color: #666;">לא הוזנו מוצרים</td>
-            </tr>`;
+                output += `\nלא הוזנו מוצרים.\n`;
             }
 
-            tableHTML += `
-        </tbody>
-    </table>
-    
-    <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; border: 1px solid #2E7D7D;">
-        <h3 style="color: #2E7D7D; margin-top: 0;">סיכום ההזמנה:</h3>
-        <p><strong>סה״כ מוצרים:</strong> ${products.length}</p>
-        <p><strong>מוצרים עם כמות:</strong> ${products.filter(p => p.quantity).length}</p>
-        <p><strong>מוצרים עם מצב מוגדר:</strong> ${products.filter(p => p.state).length}</p>
-    </div>
-    
-    <div style="text-align: center; margin-top: 20px; color: #2E7D7D; font-size: 18px; font-weight: bold;">
-        תודה על ההזמנה! 🙏
-    </div>
-</div>`;
+            output += `\n____________________________________
+סיכום ההזמנה:
+סה״כ מוצרים: ${products.length}
+מוצרים עם כמות: ${products.filter(p => p.quantity).length}
+מוצרים עם מצב מוגדר: ${products.filter(p => p.state).length}
 
-            return tableHTML;
+תודה על ההזמנה!
+____________________________________`;
+
+            return output;
         }
 
         // הצגת פלט
@@ -659,46 +640,73 @@
             const outputSection = document.getElementById('outputSection');
             const outputDisplay = document.getElementById('outputDisplay');
             
-            outputDisplay.innerHTML = output;
+            outputDisplay.textContent = output;
             outputSection.style.display = 'block';
             outputSection.classList.add('fade-in');
             outputSection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ייצוא לקובץ
-        function exportData() {
+        // שיתוף נתונים - פתיחת Web Share API
+        function shareData() {
             if (!validateForm()) {
                 return;
             }
 
             const data = generateFormattedOutput();
-            const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            
             const clientName = document.getElementById('clientName').value;
             const pickupDate = document.getElementById('pickupDate').value;
-            const fileName = `הזמנת_דוגמאות_${clientName}_${pickupDate}.txt`;
-            
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            
-            // הצגת הודעת הצלחה
+            const title = `הזמנת דוגמאות - ${clientName}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: data
+                }).then(() => {
+                    showSuccessMessage('הנתונים שותפו בהצלחה!');
+                }).catch((error) => {
+                    console.log('Error sharing:', error);
+                    // גיבוי - העתקה ללוח
+                    copyToClipboard(data);
+                });
+            } else {
+                // גיבוי להעתקה ללוח
+                copyToClipboard(data);
+            }
+        }
+
+        // העתקה ללוח
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showSuccessMessage('הנתונים הועתקו ללוח!');
+                });
+            } else {
+                // גיבוי ישן להעתקה
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showSuccessMessage('הנתונים הועתקו ללוח!');
+            }
+        }
+
+        // הצגת הודעת הצלחה
+        function showSuccessMessage(message) {
             const successDiv = document.createElement('div');
             successDiv.style.cssText = `
                 position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
                 background: #28a745; color: white; padding: 15px 25px;
                 border-radius: 8px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             `;
-            successDiv.textContent = 'הקובץ יוצא בהצלחה!';
+            successDiv.textContent = message;
             document.body.appendChild(successDiv);
             
             setTimeout(() => {
-                document.body.removeChild(successDiv);
+                if (document.body.contains(successDiv)) {
+                    document.body.removeChild(successDiv);
+                }
             }, 3000);
         }
 
@@ -716,7 +724,7 @@
             const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             
             if (mailtoLink.length > 2000) {
-                alert('הנתונים ארוכים מדי לשליחה ישירה במייל. אנא השתמש בפונקציית הייצוא לקובץ.');
+                alert('הנתונים ארוכים מדי לשליחה ישירה במייל. אנא השתמש בפונקציית השיתוף.');
                 return;
             }
             
@@ -730,3 +738,32 @@
                 document.getElementById('outputSection').style.display = 'none';
                 
                 // הסרת שגיאות ולידציה
+                document.querySelectorAll('.validation-error').forEach(el => {
+                    el.classList.remove('validation-error');
+                });
+                
+                const errorMsg = document.querySelector('.validation-message');
+                if (errorMsg) {
+                    errorMsg.remove();
+                }
+                
+                // פוקוס על השדה הראשון
+                document.getElementById('clientName').focus();
+            }
+        }
+
+        // אתחול האפליקציה
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeProductsTable();
+            document.getElementById('clientName').focus();
+        });
+
+        // הסרת שגיאות ולידציה בעת הקלדה
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('validation-error')) {
+                e.target.classList.remove('validation-error');
+            }
+        });
+    </script>
+</body>
+</html>
