@@ -162,31 +162,18 @@
             transition: all 0.2s ease;
         }
 
-        .product-input {
+        .product-input,
+        .product-select {
             width: 100%;
-            padding: 8px;
+            padding: 6px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 0.9rem;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
 
-        .product-input:focus {
-            border-color: #2E7D7D;
-            box-shadow: 0 0 5px rgba(46, 125, 125, 0.3);
-            outline: none;
-        }
-
-        .product-select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            background: white;
-            cursor: pointer;
-        }
-
+        .product-input:focus,
         .product-select:focus {
             border-color: #2E7D7D;
             box-shadow: 0 0 5px rgba(46, 125, 125, 0.3);
@@ -462,6 +449,13 @@
                     <div class="products-title">פרטי המוצרים להזמנה</div>
                     <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
                         <table class="products-table">
+                            <colgroup>
+                                <col style="width: 80px;">
+                                <col style="width: 180px;">
+                                <col style="width: 180px;">
+                                <col style="width: 180px;">
+                                <col style="width: 180px;">
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th>מס'</th>
