@@ -116,19 +116,21 @@
         }
 
         .products-table {
-            width: 100%;
+            width: 800px;
+            table-layout: fixed !important;
             border-collapse: collapse;
-            table-layout: fixed;
+            margin: 0 auto;
         }
 
         .products-table th,
         .products-table td {
-            padding: 8px 4px;
+            padding: 8px;
             text-align: center;
             border: 1px solid #ddd;
             vertical-align: middle;
-            word-wrap: break-word;
             overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .products-table th {
@@ -138,28 +140,6 @@
             position: sticky;
             top: 0;
             z-index: 10;
-        }
-
-        .products-table th:first-child { width: 12%; }
-        .products-table th:nth-child(2) { width: 22%; }
-        .products-table th:nth-child(3) { width: 22%; }
-        .products-table th:nth-child(4) { width: 22%; }
-        .products-table th:nth-child(5) { width: 22%; }
-
-        .products-table td:first-child { width: 12%; }
-        .products-table td:nth-child(2) { width: 22%; }
-        .products-table td:nth-child(3) { width: 22%; }
-        .products-table td:nth-child(4) { width: 22%; }
-        .products-table td:nth-child(5) { width: 22%; }
-
-        .products-table tbody tr:nth-child(even) {
-            background: #f8f9ff;
-        }
-
-        .products-table tbody tr:hover {
-            background: #e8f4f8;
-            transform: scale(1.02);
-            transition: all 0.2s ease;
         }
 
         .product-input,
@@ -178,6 +158,11 @@
             border-color: #2E7D7D;
             box-shadow: 0 0 5px rgba(46, 125, 125, 0.3);
             outline: none;
+        }
+
+        .product-select {
+            background: white;
+            cursor: pointer;
         }
 
         .row-number {
@@ -308,18 +293,26 @@
             }
 
             .products-table {
+                width: 100% !important;
                 font-size: 0.7rem;
             }
             
+            .products-table colgroup col:nth-child(1) { width: 15% !important; }
+            .products-table colgroup col:nth-child(2) { width: 21.25% !important; }
+            .products-table colgroup col:nth-child(3) { width: 21.25% !important; }
+            .products-table colgroup col:nth-child(4) { width: 21.25% !important; }
+            .products-table colgroup col:nth-child(5) { width: 21.25% !important; }
+            
             .product-input,
             .product-select {
-                padding: 5px;
+                padding: 4px;
                 font-size: 0.7rem;
             }
             
             .products-table th,
             .products-table td {
-                padding: 6px 3px;
+                padding: 6px 2px;
+                font-size: 0.7rem;
             }
             
             .main-content {
@@ -329,11 +322,11 @@
 
         @media (max-width: 480px) {
             .header {
-                padding: 15px 5px;
+                padding: 15px 10px;
             }
             
             .header h1 {
-                font-size: 1.8rem;
+                font-size: 1.5rem;
             }
             
             .header h2 {
@@ -344,23 +337,20 @@
                 padding: 10px;
             }
             
-            .products-section {
-                padding: 15px 10px;
-            }
-            
             .products-table {
                 font-size: 0.6rem;
             }
             
             .product-input,
             .product-select {
-                padding: 4px;
+                padding: 2px;
                 font-size: 0.6rem;
             }
             
             .products-table th,
             .products-table td {
-                padding: 4px 2px;
+                padding: 3px 1px;
+                font-size: 0.6rem;
             }
             
             .btn {
@@ -532,6 +522,18 @@
             }
         }
 
+        // פונקציה למרכוז טקסט בעמודה
+        function centerText(text, width) {
+            const str = text.toString();
+            if (str.length >= width) return str.substring(0, width);
+            
+            const totalPadding = width - str.length;
+            const leftPadding = Math.floor(totalPadding / 2);
+            const rightPadding = totalPadding - leftPadding;
+            
+            return ' '.repeat(leftPadding) + str + ' '.repeat(rightPadding);
+        }
+
         // איסוף נתוני המוצרים
         function collectProductsData() {
             const products = [];
@@ -643,17 +645,17 @@ ____________________________________
 `;
 
             if (products.length > 0) {
-                output += `\nמס׳ מק״ט                 כמות                מצב המוצר            הערות\n`;
-                output += `─────────────────────────────────────────────────────────────────────────\n`;
+                output += `\nמס׳│       מק״ט        │       כמות        │    מצב המוצר     │      הערות       \n`;
+                output += `───┼────────────────────┼────────────────────┼────────────────────┼────────────────────\n`;
                 
                 products.forEach(product => {
-                    const num = product.number.toString().padEnd(3, ' ');
-                    const sku = (product.sku || 'לא צוין').padEnd(20, ' ');
-                    const qty = (product.quantity || 'לא צוין').padEnd(20, ' ');
-                    const state = (product.state || 'לא צוין').padEnd(20, ' ');
-                    const notes = product.notes || 'לא צוין';
+                    const num = centerText(product.number, 3);
+                    const sku = centerText(product.sku || 'לא צוין', 20);
+                    const qty = centerText(product.quantity || 'לא צוין', 20);
+                    const state = centerText(product.state || 'לא צוין', 20);
+                    const notes = centerText(product.notes || 'לא צוין', 20);
                     
-                    output += `${num} ${sku} ${qty} ${state} ${notes}\n`;
+                    output += `${num}│${sku}│${qty}│${state}│${notes}\n`;
                 });
             } else {
                 output += `\nלא הוזנו מוצרים.\n`;
@@ -779,99 +781,3 @@ ____________________________________`;
             } else {
                 // גיבוי להעתקה ללוח
                 copyToClipboard(data);
-            }
-        }
-
-        // העתקה ללוח
-        function copyToClipboard(text) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showSuccessMessage('הנתונים הועתקו ללוח!');
-                });
-            } else {
-                // גיבוי ישן להעתקה
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showSuccessMessage('הנתונים הועתקו ללוח!');
-            }
-        }
-
-        // הצגת הודעת הצלחה
-        function showSuccessMessage(message) {
-            const successDiv = document.createElement('div');
-            successDiv.style.cssText = `
-                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                background: #28a745; color: white; padding: 15px 25px;
-                border-radius: 8px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            `;
-            successDiv.textContent = message;
-            document.body.appendChild(successDiv);
-            
-            setTimeout(() => {
-                if (document.body.contains(successDiv)) {
-                    document.body.removeChild(successDiv);
-                }
-            }, 3000);
-        }
-
-        // שליחה במייל
-        function emailData() {
-            if (!validateForm()) {
-                return;
-            }
-
-            const clientName = document.getElementById('clientName').value;
-            const pickupDate = document.getElementById('pickupDate').value;
-            const subject = `הזמנת דוגמאות - ${clientName} - ${new Date(pickupDate).toLocaleDateString('he-IL')}`;
-            const body = generateFormattedOutput();
-            
-            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            
-            if (mailtoLink.length > 2000) {
-                alert('הנתונים ארוכים מדי לשליחה ישירה במייל. אנא השתמש בפונקציית השיתוף.');
-                return;
-            }
-            
-            window.location.href = mailtoLink;
-        }
-
-        // ניקוי טופס
-        function clearForm() {
-            if (confirm('האם אתה בטוח שברצונך לנקות את כל הטופס?')) {
-                document.getElementById('orderForm').reset();
-                document.getElementById('outputSection').style.display = 'none';
-                
-                // הסרת שגיאות ולידציה
-                document.querySelectorAll('.validation-error').forEach(el => {
-                    el.classList.remove('validation-error');
-                });
-                
-                const errorMsg = document.querySelector('.validation-message');
-                if (errorMsg) {
-                    errorMsg.remove();
-                }
-                
-                // פוקוס על השדה הראשון
-                document.getElementById('clientName').focus();
-            }
-        }
-
-        // אתחול האפליקציה
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeProductsTable();
-            document.getElementById('clientName').focus();
-        });
-
-        // הסרת שגיאות ולידציה בעת הקלדה
-        document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('validation-error')) {
-                e.target.classList.remove('validation-error');
-            }
-        });
-    </script>
-</body>
-</html>
