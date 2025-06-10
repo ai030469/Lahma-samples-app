@@ -281,16 +281,11 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 15px;
-            white-space: pre;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
             max-height: 500px;
             overflow-y: auto;
             margin: 15px 0;
             direction: rtl;
             text-align: right;
-            line-height: 1.4;
-            unicode-bidi: bidi-override;
         }
 
         .validation-error {
@@ -478,7 +473,7 @@
                         <input type="text" class="product-input" id="productName_${i}" placeholder="שם המוצר">
                     </td>
                     <td>
-                        <input type="number" class="product-input" id="quantity_${i}" placeholder="כמות" min="0" step="0.1">
+                        <input type="number" class="product-input" id="quantity_${i}" placeholder="כמות" min="0" step="1">
                     </td>
                     <td>
                         <select class="product-select" id="state_${i}">
@@ -587,49 +582,71 @@
 
             const formattedPickupDate = new Date(pickupDate).toLocaleDateString('he-IL');
 
-            let output = `
-┌─────────────────────────────────────────────────────────┐
-│                   לחמא - הזמנת דוגמאות                  │
-└─────────────────────────────────────────────────────────┘
-
-┌─ פרטי ההזמנה ─────────────────────────────────────────┐
-│ שם הלקוח: ${clientName}                                  
-│ תאריך איסוף מתוכנן: ${formattedPickupDate}              
-│ שעה מבוקשת: ${pickupTime}                               
-│ שם המזמין: ${ordererName}                               
-│ זמן יצירת ההזמנה: ${new Date().toLocaleString('he-IL')}  
-└───────────────────────────────────────────────────────┘
-
-┌─ פרטי המוצרים ────────────────────────────────────────┐`;
+            // יצירת טבלת HTML
+            let tableHTML = `
+<div style="font-family: Arial; direction: rtl; text-align: right; line-height: 1.6;">
+    <div style="text-align: center; background: #2E7D7D; color: white; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+        <h2 style="margin: 0; font-size: 24px;">🏢 לחמא - הזמנת דוגמאות</h2>
+    </div>
+    
+    <div style="background: #f8f9ff; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #2E7D7D;">
+        <h3 style="color: #2E7D7D; margin-top: 0;">פרטי ההזמנה:</h3>
+        <p><strong>שם הלקוח:</strong> ${clientName}</p>
+        <p><strong>תאריך איסוף מתוכנן:</strong> ${formattedPickupDate}</p>
+        <p><strong>שעה מבוקשת:</strong> ${pickupTime}</p>
+        <p><strong>שם המזמין:</strong> ${ordererName}</p>
+        <p><strong>זמן יצירת ההזמנה:</strong> ${new Date().toLocaleString('he-IL')}</p>
+    </div>
+    
+    <h3 style="color: #2E7D7D;">פרטי המוצרים:</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2px solid #2E7D7D;">
+        <thead>
+            <tr style="background: #2E7D7D; color: white;">
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">מס׳</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">מק״ט</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">שם המוצר</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">כמות</th>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">מצב המוצר</th>
+            </tr>
+        </thead>
+        <tbody>`;
 
             if (products.length > 0) {
-                output += `\n│ מס׳ │      מק״ט      │         שם המוצר         │ כמות │   מצב המוצר   │\n`;
-                output += `├─────┼─────────────────┼─────────────────────────────┼──────┼─────────────────┤\n`;
-                
-                products.forEach(product => {
-                    const num = product.number.toString().padStart(2, ' ');
-                    const sku = (product.sku || 'לא צוין').padEnd(15, ' ').substring(0, 15);
-                    const name = (product.productName || 'לא צוין').padEnd(27, ' ').substring(0, 27);
-                    const qty = (product.quantity || 'לא צוין').toString().padEnd(4, ' ').substring(0, 4);
-                    const state = (product.state || 'לא צוין').padEnd(15, ' ').substring(0, 15);
-                    
-                    output += `│  ${num} │ ${sku} │ ${name} │ ${qty} │ ${state} │\n`;
+                products.forEach((product, index) => {
+                    const rowColor = index % 2 === 0 ? '#ffffff' : '#f8f9ff';
+                    tableHTML += `
+            <tr style="background: ${rowColor};">
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">${product.number}</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${product.sku || 'לא צוין'}</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${product.productName || 'לא צוין'}</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">${product.quantity || 'לא צוין'}</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${product.state || 'לא צוין'}</td>
+            </tr>`;
                 });
             } else {
-                output += `\n│                    לא הוזנו מוצרים                     │\n`;
+                tableHTML += `
+            <tr>
+                <td colspan="5" style="border: 1px solid #ddd; padding: 20px; text-align: center; color: #666;">לא הוזנו מוצרים</td>
+            </tr>`;
             }
 
-            output += `└─────┴─────────────────┴─────────────────────────────┴──────┴─────────────────┘
+            tableHTML += `
+        </tbody>
+    </table>
+    
+    <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; border: 1px solid #2E7D7D;">
+        <h3 style="color: #2E7D7D; margin-top: 0;">סיכום ההזמנה:</h3>
+        <p><strong>סה״כ מוצרים:</strong> ${products.length}</p>
+        <p><strong>מוצרים עם כמות:</strong> ${products.filter(p => p.quantity).length}</p>
+        <p><strong>מוצרים עם מצב מוגדר:</strong> ${products.filter(p => p.state).length}</p>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px; color: #2E7D7D; font-size: 18px; font-weight: bold;">
+        תודה על ההזמנה! 🙏
+    </div>
+</div>`;
 
-┌─ סיכום ההזמנה ────────────────────────────────────────┐
-│ סה״כ מוצרים: ${products.length}                          
-│ מוצרים עם כמות: ${products.filter(p => p.quantity).length}  
-│ מוצרים עם מצב מוגדר: ${products.filter(p => p.state).length}
-└───────────────────────────────────────────────────────┘
-
-                        תודה על ההזמנה!`;
-
-            return output;
+            return tableHTML;
         }
 
         // הצגת פלט
@@ -642,7 +659,7 @@
             const outputSection = document.getElementById('outputSection');
             const outputDisplay = document.getElementById('outputDisplay');
             
-            outputDisplay.textContent = output;
+            outputDisplay.innerHTML = output;
             outputSection.style.display = 'block';
             outputSection.classList.add('fade-in');
             outputSection.scrollIntoView({ behavior: 'smooth' });
@@ -713,32 +730,3 @@
                 document.getElementById('outputSection').style.display = 'none';
                 
                 // הסרת שגיאות ולידציה
-                document.querySelectorAll('.validation-error').forEach(el => {
-                    el.classList.remove('validation-error');
-                });
-                
-                const errorMsg = document.querySelector('.validation-message');
-                if (errorMsg) {
-                    errorMsg.remove();
-                }
-                
-                // פוקוס על השדה הראשון
-                document.getElementById('clientName').focus();
-            }
-        }
-
-        // אתחול האפליקציה
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeProductsTable();
-            document.getElementById('clientName').focus();
-        });
-
-        // הסרת שגיאות ולידציה בעת הקלדה
-        document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('validation-error')) {
-                e.target.classList.remove('validation-error');
-            }
-        });
-    </script>
-</body>
-</html>
