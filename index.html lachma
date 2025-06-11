@@ -619,7 +619,7 @@
             return isValid;
         }
 
-        // יצירת פלט מעוצב
+        // יצירת פלט בפורמט CSV פשוט
         function generateFormattedOutput() {
             const clientName = document.getElementById('clientName').value;
             const pickupDate = document.getElementById('pickupDate').value;
@@ -631,45 +631,39 @@
 
             let output = `
 לחמא - הזמנת דוגמאות
-____________________________________
+═══════════════════════════════════════════════════════
 
 פרטי ההזמנה:
-שם הלקוח: ${clientName}
-תאריך איסוף מתוכנן: ${formattedPickupDate}
-שעה מבוקשת: ${pickupTime}
-שם המזמין: ${ordererName}
-זמן יצירת ההזמנה: ${new Date().toLocaleString('he-IL')}
+שם הלקוח, ${clientName}
+תאריך איסוף מתוכנן, ${formattedPickupDate}
+שעה מבוקשת, ${pickupTime}
+שם המזמין, ${ordererName}
+זמן יצירת ההזמנה, ${new Date().toLocaleString('he-IL')}
 
 פרטי המוצרים:
-____________________________________
+═══════════════════════════════════════════════════════
+
+מס׳, מק״ט, כמות, מצב המוצר, הערות
 `;
 
             if (products.length > 0) {
-                output += `\nמס׳│       מק״ט        │       כמות        │    מצב המוצר     │      הערות       \n`;
-                output += `───┼────────────────────┼────────────────────┼────────────────────┼────────────────────\n`;
-                
                 products.forEach(product => {
-                    const num = centerText(product.number, 3);
-                    const sku = centerText(product.sku || 'לא צוין', 20);
-                    const qty = centerText(product.quantity || 'לא צוין', 20);
-                    const state = centerText(product.state || 'לא צוין', 20);
-                    const notes = centerText(product.notes || 'לא צוין', 20);
-                    
-                    output += `${num}│${sku}│${qty}│${state}│${notes}\n`;
+                    output += `${product.number}, ${product.sku || 'לא צוין'}, ${product.quantity || 'לא צוין'}, ${product.state || 'לא צוין'}, ${product.notes || 'לא צוין'}\n`;
                 });
             } else {
-                output += `\nלא הוזנו מוצרים.\n`;
+                output += `לא הוזנו מוצרים\n`;
             }
 
-            output += `\n____________________________________
+            output += `
+═══════════════════════════════════════════════════════
 סיכום ההזמנה:
-סה״כ מוצרים: ${products.length}
-מוצרים עם כמות: ${products.filter(p => p.quantity).length}
-מוצרים עם מצב מוגדר: ${products.filter(p => p.state).length}
-מוצרים עם הערות: ${products.filter(p => p.notes).length}
+סה״כ מוצרים, ${products.length}
+מוצרים עם כמות, ${products.filter(p => p.quantity).length}
+מוצרים עם מצב מוגדר, ${products.filter(p => p.state).length}
+מוצרים עם הערות, ${products.filter(p => p.notes).length}
 
 תודה על ההזמנה!
-____________________________________`;
+═══════════════════════════════════════════════════════`;
 
             return output;
         }
