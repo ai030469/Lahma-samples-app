@@ -1,379 +1,254 @@
-import React, { useState } from 'react';
-import { Download, Mail, CheckCircle, AlertCircle } from 'lucide-react';
-
-const OrderForm = () => {
-  const [formData, setFormData] = useState({
-    customerName: '',
-    fillDate: '',
-    pickupDate: '',
-    pickupTime: '',
-    ordererName: '',
-    products: Array(16).fill(null).map((_, index) => ({
-      id: index + 1,
-      code: '',
-      name: '',
-      quantity: '',
-      status: ''
-    }))
-  });
-
-  const [errors, setErrors] = useState({});
-  const [showOutput, setShowOutput] = useState(false);
-
-  const productStatuses = [
-    'אפוי',
-    'קפוא', 
-    'טרי',
-    'מיובש',
-    'מבושל',
-    'גלם'
-  ];
-
-  const timeOptions = [];
-  for (let hour = 6; hour <= 22; hour++) {
-    for (let min = 0; min < 60; min += 30) {
-      const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
-      timeOptions.push(timeStr);
-    }
-  }
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: false
-      }));
-    }
-  };
-
-  const handleProductChange = (index, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      products: prev.products.map((product, i) => 
-        i === index ? { ...product, [field]: value } : product
-      )
-    }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.customerName.trim()) newErrors.customerName = true;
-    if (!formData.fillDate) newErrors.fillDate = true;
-    if (!formData.pickupDate) newErrors.pickupDate = true;
-    if (!formData.pickupTime) newErrors.pickupTime = true;
-    if (!formData.ordererName.trim()) newErrors.ordererName = true;
-    
-    // Check if pickup date is after fill date
-    if (formData.fillDate && formData.pickupDate) {
-      const fillDate = new Date(formData.fillDate);
-      const pickupDate = new Date(formData.pickupDate);
-      if (pickupDate <= fillDate) {
-        newErrors.pickupDate = true;
-        newErrors.dateOrder = true;
-      }
-    }
-    
-    // Check if at least one product is filled
-    const hasProducts = formData.products.some(product => 
-      product.code.trim() || product.name.trim() || product.quantity || product.status
-    );
-    
-    if (!hasProducts) {
-      newErrors.products = true;
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (validateForm()) {
-      setShowOutput(true);
-    }
-  };
-
-  const generateOutput = () => {
-    const filledProducts = formData.products.filter(product => 
-      product.code.trim() || product.name.trim() || product.quantity || product.status
-    );
-    
-    let output = `הזמנת דוגמאות - לחמא\n`;
-    output += `=====================================\n\n`;
-    output += `שם הלקוח: ${formData.customerName}\n`;
-    output += `תאריך מילוי: ${new Date(formData.fillDate).toLocaleDateString('he-IL')}\n`;
-    output += `תאריך איסוף מתוכנן: ${new Date(formData.pickupDate).toLocaleDateString('he-IL')}\n`;
-    output += `שעת איסוף מבוקשת: ${formData.pickupTime}\n`;
-    output += `שם המזמין: ${formData.ordererName}\n\n`;
-    output += `רשימת מוצרים:\n`;
-    output += `================\n`;
-    
-    filledProducts.forEach(product => {
-      output += `${product.id}. מק"ט: ${product.code} | שם: ${product.name} | כמות: ${product.quantity} | מצב: ${product.status}\n`;
-    });
-    
-    return output;
-  };
-
-  const downloadFile = () => {
-    const output = generateOutput();
-    const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const fileName = `הזמנה_${formData.customerName}_${formData.fillDate}.txt`;
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const sendEmail = () => {
-    const output = generateOutput();
-    const subject = encodeURIComponent(`הזמנת דוגמאות - ${formData.customerName}`);
-    const body = encodeURIComponent(output);
-    window.open(`mailto:?subject=${subject}&body=${body}`);
-  };
-
-  if (showOutput) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-xl shadow-xl p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-orange-600 mb-2">לחמא</h1>
-              <h2 className="text-2xl text-gray-700">סיכום הזמנה</h2>
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לחמא - הזמנת דוגמאות</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #d2691e;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        .form-row {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+        }
+        th {
+            background: #f2f2f2;
+        }
+        .btn {
+            background: #d2691e;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+        .btn:hover {
+            background: #b8601a;
+        }
+        .output {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            margin: 20px 0;
+        }
+        .hidden {
+            display: none;
+        }
+        .actions {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .actions button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .download { background: #007bff; color: white; }
+        .email { background: #28a745; color: white; }
+        .back { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>לחמא</h1>
+        
+        <div id="form-section">
+            <div class="form-row">
+                <label>שם הלקוח:</label>
+                <input type="text" id="customer" required>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-6 mb-6">
-              <pre className="whitespace-pre-wrap text-right text-gray-800 leading-relaxed">
-                {generateOutput()}
-              </pre>
+            <div class="form-row">
+                <label>תאריך איסוף מתוכנן:</label>
+                <input type="date" id="pickup-date" required>
             </div>
             
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={downloadFile}
-                className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Download size={20} />
-                הורד קובץ
-              </button>
-              
-              <button
-                onClick={sendEmail}
-                className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Mail size={20} />
-                שלח במייל
-              </button>
-              
-              <button
-                onClick={() => setShowOutput(false)}
-                className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                חזור לעריכה
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-8 text-center">
-            <h1 className="text-5xl font-bold mb-2">לחמא</h1>
-            <h2 className="text-2xl opacity-90">מערכת הזמנת דוגמאות</h2>
-          </div>
-
-          <div className="p-8">
-            {/* Customer Details */}
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 text-right">פרטים כלליים</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
-                    שם הלקוח *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.customerName}
-                    onChange={(e) => handleInputChange('customerName', e.target.value)}
-                    className={`w-full p-3 border rounded-lg text-right ${
-                      errors.customerName ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-orange-500 focus:border-transparent`}
-                    placeholder="הזן שם לקוח"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
-                    תאריך מילוי *
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.fillDate}
-                    onChange={(e) => handleInputChange('fillDate', e.target.value)}
-                    className={`w-full p-3 border rounded-lg ${
-                      errors.fillDate ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-orange-500 focus:border-transparent`}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
-                    תאריך איסוף מתוכנן *
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.pickupDate}
-                    onChange={(e) => handleInputChange('pickupDate', e.target.value)}
-                    className={`w-full p-3 border rounded-lg ${
-                      errors.pickupDate ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-orange-500 focus:border-transparent`}
-                  />
-                  {errors.dateOrder && (
-                    <p className="text-red-500 text-sm mt-1 text-right">תאריך האיסוף חייב להיות אחרי תאריך המילוי</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
-                    שעת איסוף מבוקשת *
-                  </label>
-                  <select
-                    value={formData.pickupTime}
-                    onChange={(e) => handleInputChange('pickupTime', e.target.value)}
-                    className={`w-full p-3 border rounded-lg ${
-                      errors.pickupTime ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-orange-500 focus:border-transparent`}
-                  >
+            <div class="form-row">
+                <label>שעת איסוף מבוקשת:</label>
+                <select id="pickup-time" required>
                     <option value="">בחר שעה</option>
-                    {timeOptions.map(time => (
-                      <option key={time} value={time}>{time}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
-                    שם המזמין *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.ordererName}
-                    onChange={(e) => handleInputChange('ordererName', e.target.value)}
-                    className={`w-full p-3 border rounded-lg text-right ${
-                      errors.ordererName ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-orange-500 focus:border-transparent`}
-                    placeholder="הזן שם המזמין"
-                  />
-                </div>
-              </div>
+                    <option value="08:00">08:00</option>
+                    <option value="09:00">09:00</option>
+                    <option value="10:00">10:00</option>
+                    <option value="11:00">11:00</option>
+                    <option value="12:00">12:00</option>
+                    <option value="13:00">13:00</option>
+                    <option value="14:00">14:00</option>
+                    <option value="15:00">15:00</option>
+                    <option value="16:00">16:00</option>
+                    <option value="17:00">17:00</option>
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <label>שם המזמין:</label>
+                <input type="text" id="orderer" required>
             </div>
 
-            {/* Products Table */}
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 text-right">רשימת מוצרים</h3>
-              {errors.products && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-right flex items-center gap-2">
-                    <AlertCircle size={16} />
-                    יש למלא לפחות מוצר אחד
-                  </p>
-                </div>
-              )}
-              
-              <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                <table className="min-w-full">
-                  <thead className="bg-gradient-to-r from-orange-100 to-amber-100">
-                    <tr>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 border-b">מס'</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 border-b">מק"ט</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 border-b">שם המוצר</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 border-b">כמות</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 border-b">מצב המוצר</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formData.products.map((product, index) => (
-                      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-center font-medium text-gray-600 border-b">
-                          {product.id}
-                        </td>
-                        <td className="px-4 py-3 border-b">
-                          <input
-                            type="text"
-                            value={product.code}
-                            onChange={(e) => handleProductChange(index, 'code', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded text-right focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                            placeholder="מק"ט"
-                          />
-                        </td>
-                        <td className="px-4 py-3 border-b">
-                          <input
-                            type="text"
-                            value={product.name}
-                            onChange={(e) => handleProductChange(index, 'name', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded text-right focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                            placeholder="שם המוצר"
-                          />
-                        </td>
-                        <td className="px-4 py-3 border-b">
-                          <input
-                            type="number"
-                            value={product.quantity}
-                            onChange={(e) => handleProductChange(index, 'quantity', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded text-right focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                            placeholder="כמות"
-                            min="0"
-                          />
-                        </td>
-                        <td className="px-4 py-3 border-b">
-                          <select
-                            value={product.status}
-                            onChange={(e) => handleProductChange(index, 'status', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                          >
-                            <option value="">בחר מצב</option>
-                            {productStatuses.map(status => (
-                              <option key={status} value={status}>{status}</option>
-                            ))}
-                          </select>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <h3>רשימת מוצרים:</h3>
+            <table id="products-table">
+                <tr>
+                    <th>מס'</th>
+                    <th>מק"ט</th>
+                    <th>שם המוצר</th>
+                    <th>כמות</th>
+                    <th>מצב המוצר</th>
+                </tr>
+            </table>
 
-            {/* Submit Button */}
-            <div className="text-center">
-              <button
-                onClick={handleSubmit}
-                className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-orange-700 hover:to-amber-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-              >
-                <CheckCircle className="inline-block mr-2" size={20} />
-                צור הזמנה
-              </button>
-            </div>
-          </div>
+            <button class="btn" onclick="createOrder()">צור הזמנה</button>
         </div>
-      </div>
-    );
-  }
-};
 
-export default OrderForm;
+        <div id="result-section" class="hidden">
+            <h3>תוצאה:</h3>
+            <div class="output" id="output"></div>
+            <div class="actions">
+                <button class="download" onclick="downloadFile()">הורד קובץ</button>
+                <button class="email" onclick="sendEmail()">שלח במייל</button>
+                <button class="back" onclick="goBack()">חזור</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // יצירת טבלת מוצרים
+        function createTable() {
+            const table = document.getElementById('products-table');
+            for (let i = 1; i <= 16; i++) {
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td><input type="text" id="code-${i}"></td>
+                    <td><input type="text" id="name-${i}"></td>
+                    <td><input type="number" id="qty-${i}"></td>
+                    <td>
+                        <select id="status-${i}">
+                            <option value="">בחר</option>
+                            <option value="אפוי">אפוי</option>
+                            <option value="קפוא">קפוא</option>
+                            <option value="טרי">טרי</option>
+                            <option value="מיובש">מיובש</option>
+                            <option value="מבושל">מבושל</option>
+                            <option value="גלם">גלם</option>
+                        </select>
+                    </td>
+                `;
+            }
+        }
+
+        // יצירת הזמנה
+        function createOrder() {
+            const customer = document.getElementById('customer').value;
+            const pickupDate = document.getElementById('pickup-date').value;
+            const pickupTime = document.getElementById('pickup-time').value;
+            const orderer = document.getElementById('orderer').value;
+
+            if (!customer || !pickupDate || !pickupTime || !orderer) {
+                alert('אנא מלא את כל השדות הנדרשים');
+                return;
+            }
+
+            let output = `הזמנת דוגמאות - לחמא\n`;
+            output += `========================\n\n`;
+            output += `שם הלקוח: ${customer}\n`;
+            output += `תאריך איסוף מתוכנן: ${pickupDate}\n`;
+            output += `שעת איסוף מבוקשת: ${pickupTime}\n`;
+            output += `שם המזמין: ${orderer}\n\n`;
+            output += `רשימת מוצרים:\n`;
+            output += `================\n`;
+
+            for (let i = 1; i <= 16; i++) {
+                const code = document.getElementById(`code-${i}`).value;
+                const name = document.getElementById(`name-${i}`).value;
+                const qty = document.getElementById(`qty-${i}`).value;
+                const status = document.getElementById(`status-${i}`).value;
+
+                if (code || name || qty || status) {
+                    output += `${i}. מק"ט: ${code} | שם: ${name} | כמות: ${qty} | מצב: ${status}\n`;
+                }
+            }
+
+            document.getElementById('output').textContent = output;
+            document.getElementById('form-section').classList.add('hidden');
+            document.getElementById('result-section').classList.remove('hidden');
+        }
+
+        // הורדת קובץ
+        function downloadFile() {
+            const content = document.getElementById('output').textContent;
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'הזמנה-לחמא.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // שליחה במייל
+        function sendEmail() {
+            const content = document.getElementById('output').textContent;
+            const subject = 'הזמנת דוגמאות - לחמא';
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(content)}`;
+            window.open(mailtoLink);
+        }
+
+        // חזרה
+        function goBack() {
+            document.getElementById('result-section').classList.add('hidden');
+            document.getElementById('form-section').classList.remove('hidden');
+        }
+
+        // אתחול
+        window.onload = function() {
+            createTable();
+        };
+    </script>
+</body>
+</html>
