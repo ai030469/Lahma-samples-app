@@ -421,9 +421,9 @@
                                 <tr>
                                     <th>מס'</th>
                                     <th>מק"ט</th>
-                                    <th>שם המוצר</th>
+                                    <th>מצב פריט</th>
                                     <th>כמות</th>
-                                    <th>מצב המוצר</th>
+                                    <th>הערות</th>
                                 </tr>
                             </thead>
                             <tbody id="productsTableBody">
@@ -436,7 +436,6 @@
                 <div class="actions">
                     <button type="button" class="btn btn-primary" onclick="generateOutput()">הצג פלט נתונים</button>
                     <button type="button" class="btn btn-success" onclick="exportData()">ייצוא לקובץ</button>
-                    <button type="button" class="btn btn-secondary" onclick="emailData()">שלח במייל</button>
                     <button type="button" class="btn btn-secondary" onclick="clearForm()">נקה טופס</button>
                 </div>
             </form>
@@ -475,17 +474,17 @@
                         <input type="text" class="product-input" id="sku_${i}" placeholder="מק"ט מוצר">
                     </td>
                     <td>
-                        <input type="text" class="product-input" id="productName_${i}" placeholder="שם המוצר">
-                    </td>
-                    <td>
-                        <input type="number" class="product-input" id="quantity_${i}" placeholder="כמות" min="0" step="1">
-                    </td>
-                    <td>
                         <select class="product-select" id="state_${i}">
                             ${productStates.map(state => 
                                 `<option value="${state.value}">${state.text}</option>`
                             ).join('')}
                         </select>
+                    </td>
+                    <td>
+                        <input type="number" class="product-input" id="quantity_${i}" placeholder="כמות" min="0" step="1">
+                    </td>
+                    <td>
+                        <input type="text" class="product-input" id="notes_${i}" placeholder="הערות">
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -497,17 +496,17 @@
             const products = [];
             for (let i = 1; i <= 16; i++) {
                 const sku = document.getElementById(`sku_${i}`).value.trim();
-                const productName = document.getElementById(`productName_${i}`).value.trim();
-                const quantity = document.getElementById(`quantity_${i}`).value.trim();
                 const state = document.getElementById(`state_${i}`).value;
+                const quantity = document.getElementById(`quantity_${i}`).value.trim();
+                const notes = document.getElementById(`notes_${i}`).value.trim();
                 
-                if (sku || productName || quantity || state) {
+                if (sku || state || quantity || notes) {
                     products.push({
                         number: i,
                         sku: sku,
-                        productName: productName,
+                        state: state,
                         quantity: quantity,
-                        state: state
+                        notes: notes
                     });
                 }
             }
@@ -603,23 +602,23 @@
 ┌─ פרטי המוצרים ────────────────────────────────────────┐`;
 
             if (products.length > 0) {
-                output += `\n│ מס׳ │      מק״ט      │         שם המוצר         │ כמות │   מצב המוצר   │\n`;
-                output += `├─────┼─────────────────┼─────────────────────────────┼──────┼─────────────────┤\n`;
+                output += `\n│ מס׳ │      מק״ט      │   מצב פריט   │ כמות │        הערות        │\n`;
+                output += `├─────┼─────────────────┼─────────────────┼──────┼─────────────────────┤\n`;
                 
                 products.forEach(product => {
                     const num = product.number.toString().padStart(2, ' ');
                     const sku = (product.sku || 'לא צוין').padEnd(15, ' ').substring(0, 15);
-                    const name = (product.productName || 'לא צוין').padEnd(27, ' ').substring(0, 27);
-                    const qty = (product.quantity || 'לא צוין').toString().padEnd(4, ' ').substring(0, 4);
                     const state = (product.state || 'לא צוין').padEnd(15, ' ').substring(0, 15);
+                    const qty = (product.quantity || 'לא צוין').toString().padEnd(4, ' ').substring(0, 4);
+                    const notes = (product.notes || 'לא צוין').padEnd(19, ' ').substring(0, 19);
                     
-                    output += `│  ${num} │ ${sku} │ ${name} │ ${qty} │ ${state} │\n`;
+                    output += `│  ${num} │ ${sku} │ ${state} │ ${qty} │ ${notes} │\n`;
                 });
             } else {
                 output += `\n│                    לא הוזנו מוצרים                     │\n`;
             }
 
-            output += `└─────┴─────────────────┴─────────────────────────────┴──────┴─────────────────┘
+            output += `└─────┴─────────────────┴─────────────────┴──────┴─────────────────────┘
 
 ┌─ סיכום ההזמנה ────────────────────────────────────────┐
 │ סה״כ מוצרים: ${products.length}                          
@@ -648,20 +647,21 @@
             outputSection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ייצוא לקובץ
+        // ייצוא לקובץ פשוט ויעיל
         function exportData() {
             if (!validateForm()) {
                 return;
             }
 
             const data = generateFormattedOutput();
-            const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            
             const clientName = document.getElementById('clientName').value;
             const pickupDate = document.getElementById('pickupDate').value;
             const fileName = `הזמנת_דוגמאות_${clientName}_${pickupDate}.txt`;
+
+            // יצירת והורדת קובץ
+            const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
             
             a.href = url;
             a.download = fileName;
@@ -670,40 +670,38 @@
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
             
-            // הצגת הודעת הצלחה
+            showSuccessMessage('הקובץ נוצר בהצלחה! תוכל כעת לשתף אותו.');
+        }
+
+        // הורדת קובץ
+        function downloadFile(blob, fileName) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // הצגת הודעת הצלחה
+        function showSuccessMessage(message) {
             const successDiv = document.createElement('div');
             successDiv.style.cssText = `
                 position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
                 background: #28a745; color: white; padding: 15px 25px;
                 border-radius: 8px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                max-width: 300px; text-align: center;
             `;
-            successDiv.textContent = 'הקובץ יוצא בהצלחה!';
+            successDiv.textContent = message;
             document.body.appendChild(successDiv);
             
             setTimeout(() => {
-                document.body.removeChild(successDiv);
-            }, 3000);
-        }
-
-        // שליחה במייל
-        function emailData() {
-            if (!validateForm()) {
-                return;
-            }
-
-            const clientName = document.getElementById('clientName').value;
-            const pickupDate = document.getElementById('pickupDate').value;
-            const subject = `הזמנת דוגמאות - ${clientName} - ${new Date(pickupDate).toLocaleDateString('he-IL')}`;
-            const body = generateFormattedOutput();
-            
-            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            
-            if (mailtoLink.length > 2000) {
-                alert('הנתונים ארוכים מדי לשליחה ישירה במייל. אנא השתמש בפונקציית הייצוא לקובץ.');
-                return;
-            }
-            
-            window.location.href = mailtoLink;
+                if (document.body.contains(successDiv)) {
+                    document.body.removeChild(successDiv);
+                }
+            }, 4000);
         }
 
         // ניקוי טופס
