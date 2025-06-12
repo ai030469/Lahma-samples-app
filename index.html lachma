@@ -673,18 +673,6 @@
             showSuccessMessage('הקובץ נוצר בהצלחה! תוכל כעת לשתף אותו.');
         }
 
-        // הורדת קובץ
-        function downloadFile(blob, fileName) {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }
-
         // הצגת הודעת הצלחה
         function showSuccessMessage(message) {
             const successDiv = document.createElement('div');
