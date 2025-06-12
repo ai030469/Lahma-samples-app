@@ -647,7 +647,7 @@
             outputSection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ייצוא לקובץ פשוט ויעיל
+        // ייצוא לקובץ
         function exportData() {
             if (!validateForm()) {
                 return;
@@ -658,7 +658,6 @@
             const pickupDate = document.getElementById('pickupDate').value;
             const fileName = `הזמנת_דוגמאות_${clientName}_${pickupDate}.txt`;
 
-            // יצירת והורדת קובץ
             const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -670,26 +669,7 @@
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
             
-            showSuccessMessage('הקובץ נוצר בהצלחה! תוכל כעת לשתף אותו.');
-        }
-
-        // הצגת הודעת הצלחה
-        function showSuccessMessage(message) {
-            const successDiv = document.createElement('div');
-            successDiv.style.cssText = `
-                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                background: #28a745; color: white; padding: 15px 25px;
-                border-radius: 8px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                max-width: 300px; text-align: center;
-            `;
-            successDiv.textContent = message;
-            document.body.appendChild(successDiv);
-            
-            setTimeout(() => {
-                if (document.body.contains(successDiv)) {
-                    document.body.removeChild(successDiv);
-                }
-            }, 4000);
+            alert('הקובץ נוצר בהצלחה!');
         }
 
         // ניקוי טופס
