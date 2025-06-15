@@ -818,6 +818,7 @@ function exportData() {
             const rows = document.querySelectorAll('.products-table tbody tr');
             let hasProducts = false;
             let tableRows = '';
+            const hebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע'];
 
             rows.forEach((row, index) => {
                 const inputs = row.querySelectorAll('input');
@@ -829,9 +830,10 @@ function exportData() {
 
                 if (code || status || quantity || notes) {
                     hasProducts = true;
+                    const hebrewLetter = hebrewLetters[index] || (index + 1).toString();
                     tableRows += `
                         <tr>
-                            <td class="col-num">${index + 1}</td>
+                            <td class="col-num">${hebrewLetter}</td>
                             <td class="col-code">${code || ''}</td>
                             <td class="col-status">${status || ''}</td>
                             <td class="col-qty">${quantity || ''}</td>
@@ -885,6 +887,7 @@ function exportData() {
 
             const rows = document.querySelectorAll('.products-table tbody tr');
             let hasProducts = false;
+            const hebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע'];
 
             rows.forEach((row, index) => {
                 const inputs = row.querySelectorAll('input');
@@ -896,7 +899,8 @@ function exportData() {
 
                 if (code || status || quantity || notes) {
                     hasProducts = true;
-                    copyText += `${index + 1} | ${code || ''} | ${status || ''} | ${quantity || ''} | ${notes || ''}\n`;
+                    const hebrewLetter = hebrewLetters[index] || (index + 1).toString();
+                    copyText += `${hebrewLetter} | ${code || ''} | ${status || ''} | ${quantity || ''} | ${notes || ''}\n`;
                 }
             });
 
@@ -926,6 +930,7 @@ function exportData() {
             const rows = document.querySelectorAll('.products-table tbody tr');
             let hasProducts = false;
             let productCount = 0;
+            const hebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע'];
 
             rows.forEach((row, index) => {
                 const inputs = row.querySelectorAll('input');
@@ -937,8 +942,9 @@ function exportData() {
 
                 if (code || status || quantity || notes) {
                     hasProducts = true;
+                    const hebrewLetter = hebrewLetters[productCount] || (productCount + 1).toString();
                     productCount++;
-                    shareText += `${productCount}. מק״ט: ${code || 'לא צוין'}, מצב: ${status || 'לא צוין'}, כמות: ${quantity || 'לא צוין'}`;
+                    shareText += `${hebrewLetter}. מק״ט: ${code || 'לא צוין'}, מצב: ${status || 'לא צוין'}, כמות: ${quantity || 'לא צוין'}`;
                     if (notes) {
                         shareText += `, הערות: ${notes}`;
                     }
